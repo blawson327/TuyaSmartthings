@@ -9,8 +9,7 @@ codetheweb/tuyapi
 DevID and localkey's
    see one of the links below in order to find your specific keys. I used Android ADB to find the localkey(no root required)
 
-
-Node script hacked together, using DaveGut's TPLink script as a starting point.
+Device Handler and Node script hacked together using DaveGut's TPLink script as a starting point.
 
 Credits:
 Tuya/Smart Life
