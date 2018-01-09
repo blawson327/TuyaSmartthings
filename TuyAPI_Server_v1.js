@@ -4,11 +4,6 @@ TuyAPI node.js
 Derived from
 Dave Gutheinz's TP-LinkHub - Version 1.0
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
-		http://www.apache.org/licenses/LICENSE-2.0
-		
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
 */
 
 //##### Options for this program ###################################
@@ -98,41 +93,46 @@ function processDeviceCommand(request, response) {
 	switch(command) {
 		case "off":
 			tuya.setStatus(0, function(error, result) {
-		                  if (error) { return console.log(error); }
-		                  console.log('Result of setting status to 0 : ' + result);
-				  //response.setHeader("cmd-response", result)
-				  response.end()
+		    	  if (error) { tuya.destroy(); return console.log(error); }
+		          console.log('Result of setting status to 0 : ' + result);
+				  response.setHeader("tuyapi-onoff", "off");
+				  response.setHeader("cmd-response", result);
+				  response.end();
+				  console.log("Status (off) sent to SmartThings.");
 				  tuya.destroy();
 			});
 		break
 
 		case "on":
 			tuya.setStatus(1, function(error, result) {
-		                  if (error) { return console.log(error); }
+		                  if (error) { tuya.destroy(); return console.log(error); }
 		                  console.log('Result of setting status to 1 : ' + result);
-				  //response.setHeader("cmd-response", result)
-				  response.end()
+		          response.setHeader("tuyapi-onoff", "on");
+				  response.setHeader("cmd-response", result)
+				  response.end();
+				  console.log("Status (on) sent to SmartThings.");
 				  tuya.destroy();
 			});		
 		break
 
 		case "status":
 			tuya.getStatus(function(error, status) {
-				if (error) { return console.log(error); }
+				if (error) { tuya.destroy(); return console.log(error); }
 				if (status == true) {
 					status = "on";
 				} else {
 					status = "off";
 				}
 				response.setHeader("cmd-response", status );
-				console.log("Status (" + status + ") sent to SmartThings.")
-				response.end()
+				console.log("Status (" + status + ") sent to SmartThings.");
+				response.end();
 				tuya.destroy();
 			});
 		break
 
 		default:
-			console.log('Unknown request')
+			tuya.destroy();
+			console.log('Unknown request');
 	
 	}  	
 }
