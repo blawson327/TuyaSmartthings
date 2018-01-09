@@ -24,5 +24,6 @@ https://github.com/clach04/python-tuya
 
 
 TPLink-used as a starting point for the DH/node.js scripts
+
 https://github.com/DaveGut/Hub-Based_TP-Link-to-SmartThings-Integration
 
