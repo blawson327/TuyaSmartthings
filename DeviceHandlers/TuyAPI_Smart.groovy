@@ -17,24 +17,17 @@ Update History
 01-04-2018	- Initial release
 */
 metadata {
-	definition (name: "TuyAPI", namespace: "bal", author: "Ben Lawson") {
+	definition (name: "TuyAPI", namespace: "blawson327", author: "Ben Lawson") {
 		capability "Switch"
 		capability "refresh"
 		capability "polling"
-		capability "powerMeter"
 		capability "Sensor"
 		capability "Actuator"
 		command "setCurrentDate"
-		attribute "monthTotalE", "string"
-		attribute "monthAvgE", "string"
-		attribute "weekTotalE", "string"
-		attribute "weekAvgE", "string"
-		attribute "engrToday", "string"
-		attribute "dateUpdate", "string"
 	}
 	tiles(scale: 2) {
 		standardTile("switch", "device.switch", width: 6, height: 4, canChangeIcon: true) {
-			state "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc",nextState:"turningOff"
+        	state "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc",nextState:"turningOff"
 			state "off", label:'${name}', action:"switch.on", icon:"st.switch.off", backgroundColor:"#ffffff",nextState:"waiting"
 			state "turningOff", label:'waiting', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#15EE10",nextState:"waiting"
 			state "waiting", label:'${name}', action:"switch.on", icon:"st.switches.switch.on", backgroundColor:"#15EE10",nextState:"on"
@@ -60,7 +53,7 @@ def installed() {
 
 def updated() {
 	unschedule()
-	runEvery15Minutes(refresh)
+	runEvery1Minute(refresh)
 	runIn(2, refresh)
 }
 //	----- BASIC PLUG COMMANDS ------------------------------------
@@ -76,8 +69,13 @@ def onOffResponse(response){
 	if (response.headers["cmd-response"] == "TcpTimeout") {
 		log.error "$device.name $device.label: Communications Error"
 		sendEvent(name: "switch", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
-	}
-	refresh()
+	} else {
+    	if (response.headers["cmd-response"] == "true") {
+            def cmd = response.headers["tuyapi-onoff"]
+        	sendEvent(name: "switch", value: cmd)
+            }
+    }
+	//refresh()
 }
 
 //	----- REFRESH ------------------------------------------------
@@ -94,7 +92,7 @@ def refreshResponse(response){
 		//def status = cmdResponse.system.get_sysinfo.relay_state
         def status = response.headers["cmd-response"]
 		log.info "${device.name} ${device.label}: Power: ${status}"
-		sendEvent(name: "switch", value: status)
+		sendEvent(name: "switch", value: status, isStateChange: true)
 	}
 }
 
