@@ -17,7 +17,7 @@ Update History
 01-04-2018	- Initial release
 */
 metadata {
-	definition (name: "TuyAPI", namespace: "blawson327", author: "Ben Lawson") {
+	definition (name: "TuyAPI Smart Plug", namespace: "blawson327", author: "Ben Lawson") {
 		capability "Switch"
 		capability "refresh"
 		capability "polling"
