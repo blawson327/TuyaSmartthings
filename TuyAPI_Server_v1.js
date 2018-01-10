@@ -67,19 +67,11 @@ function onRequest(request, response){
 
 //---- Send deviceCommand and send response to SmartThings ---------
 function processDeviceCommand(request, response) {
-	//Create TuyaDevice here
-	//var command = request.headers["tplink-command"]
-	//var deviceIP = request.headers["tplink-iot-ip"]
 	
 	var deviceIP = request.headers["tuyapi-ip"]
 	var deviceID = request.headers["tuyapi-devid"]
 	var localKey = request.headers["tuyapi-localkey"]
 	var command =  request.headers["tuyapi-command"]
-	
-	//console.log("IP: " + deviceIP)
-	//console.log("Device ID: " + deviceID)
-	//console.log("LocalKey: " + localKey)
-	//console.log("Tuya Command: " + command)
 
 	var respMsg = "deviceCommand sending to IP: " + deviceIP + " Command: " + command
 	console.log(respMsg)
@@ -93,7 +85,10 @@ function processDeviceCommand(request, response) {
 	switch(command) {
 		case "off":
 			tuya.setStatus(0, function(error, result) {
-		    	  if (error) { tuya.destroy(); return console.log(error); }
+		    	  if (error) { 
+				    tuya.destroy();
+		    	  	return console.log("TUYAPI Error: " + error); 
+		    	  }
 		          console.log('Result of setting status to 0 : ' + result);
 				  response.setHeader("tuyapi-onoff", "off");
 				  response.setHeader("cmd-response", result);
@@ -105,8 +100,11 @@ function processDeviceCommand(request, response) {
 
 		case "on":
 			tuya.setStatus(1, function(error, result) {
-		                  if (error) { tuya.destroy(); return console.log(error); }
-		                  console.log('Result of setting status to 1 : ' + result);
+		          if (error) { 
+				    tuya.destroy();
+		    	  	return console.log("TUYAPI Error: " + error); 
+		    	  }
+		          console.log('Result of setting status to 1 : ' + result);
 		          response.setHeader("tuyapi-onoff", "on");
 				  response.setHeader("cmd-response", result)
 				  response.end();
@@ -117,7 +115,10 @@ function processDeviceCommand(request, response) {
 
 		case "status":
 			tuya.getStatus(function(error, status) {
-				if (error) { tuya.destroy(); return console.log(error); }
+				if (error) { 
+				       tuya.destroy();
+		    	  	   return console.log("TUYAPI Error: " + error); 
+		    	}
 				if (status == true) {
 					status = "on";
 				} else {
