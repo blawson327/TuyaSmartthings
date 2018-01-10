@@ -53,7 +53,7 @@ def installed() {
 
 def updated() {
 	unschedule()
-	runEvery1Minute(refresh)
+	runEvery15Minutes(refresh)
 	runIn(2, refresh)
 }
 //	----- BASIC PLUG COMMANDS ------------------------------------
@@ -72,7 +72,7 @@ def onOffResponse(response){
 	} else {
     	if (response.headers["cmd-response"] == "true") {
             def cmd = response.headers["tuyapi-onoff"]
-        	sendEvent(name: "switch", value: cmd)
+        	sendEvent(name: "switch", value: cmd, isStateChange: true)
             }
     }
 	//refresh()
@@ -88,11 +88,9 @@ def refreshResponse(response){
 		log.error "$device.name $device.label: Communications Error"
 		sendEvent(name: "switch", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
 	} else {
-        //def cmdResponse = parseJson(response.headers["cmd-response"])
-		//def status = cmdResponse.system.get_sysinfo.relay_state
         def status = response.headers["cmd-response"]
 		log.info "${device.name} ${device.label}: Power: ${status}"
-		sendEvent(name: "switch", value: status, isStateChange: true)
+		sendEvent(name: "switch", value: status)
 	}
 }
 
