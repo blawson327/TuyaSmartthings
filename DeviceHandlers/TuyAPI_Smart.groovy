@@ -5,6 +5,7 @@ TuyAPI SmartPlug Device Handler
 Derived from
 	TP-Link HS Series Device Handler
 	Copyright 2017 Dave Gutheinz
+Original smartthings work and node server created by Ben Lawson
 
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
@@ -15,10 +16,11 @@ Unless required by applicable law or agreed to in writing, software distributed 
 Supported models and functions:  This device supports smart plugs that use the Tuya Smart Life app
 
 Update History
+05-22-2018 - Updated to make on off commands work and make compatible with Hubitat
 01-04-2018	- Initial release
 */
 metadata {
-	definition (name: "TuyAPI Smart Plug", namespace: "blawson327", author: "Ben Lawson") {
+	definition (name: "TuyAPI Smart Plug", namespace: "cwwilson08", author: "Chris Wilson") {
 		capability "Switch"
 		capability "Refresh"
 		//capability "Polling"
