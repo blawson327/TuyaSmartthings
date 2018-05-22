@@ -72,63 +72,81 @@ function processDeviceCommand(request, response) {
 	var deviceID = request.headers["tuyapi-devid"]
 	var localKey = request.headers["tuyapi-localkey"]
 	var command =  request.headers["tuyapi-command"]
+        var dps = request.headers["dps"]
+        var action = request.headers["action"]
+
+	response.setHeader("action", action)
+        
 
 	var respMsg = "deviceCommand sending to IP: " + deviceIP + " Command: " + command
 	console.log(respMsg)
 
 	var tuya = new TuyaDevice({
-	  type: 'outlet',
-	  ip: deviceIP,
+	  
+	  
 	  id: deviceID,
-	  key: localKey});
+          key: localKey,
+          dps: '4',
+          ip: '192.168.1.75'});
 
 	switch(command) {
 		case "off":
-			tuya.setStatus(0, function(error, result) {
-		    	  if (error) { 
-				    tuya.destroy();
-		    	  	return console.log("TUYAPI Error: " + error); 
-		    	  }
-		          console.log('Result of setting status to 0 : ' + result);
-				  response.setHeader("tuyapi-onoff", "off");
-				  response.setHeader("cmd-response", result);
-				  response.end();
-				  console.log("Status (off) sent to SmartThings.");
-				  tuya.destroy();
-			});
+			//tuya.resolveIds().then(() => {  
+  tuya.get({'dps': dps}).then(status => {
+    console.log('Status: ' + status);
+
+    tuya.set({set: false, 'dps': dps}).then(result => {
+               console.log('Result of setting status to ' + false + ': ' + result);
+               response.setHeader("cmd-response", !status );
+               response.setHeader("onoff", "off");
+	        console.log("Status (" + status + ") sent to SmartThings.");
+	        response.end();
+               
+      
+        return;
+      
+    });
+  //});
+});
 		break
 
 		case "on":
-			tuya.setStatus(1, function(error, result) {
-		          if (error) { 
-				    tuya.destroy();
-		    	  	return console.log("TUYAPI Error: " + error); 
-		    	  }
-		          console.log('Result of setting status to 1 : ' + result);
-		          response.setHeader("tuyapi-onoff", "on");
-				  response.setHeader("cmd-response", result)
-				  response.end();
-				  console.log("Status (on) sent to SmartThings.");
-				  tuya.destroy();
-			});		
+		//tuya.resolveIds().then(() => {  
+  tuya.get({'dps': dps}).then(status => {
+    console.log('Status: ' + status);
+
+    tuya.set({set: true, 'dps': dps}).then(result => {
+               console.log('Result of setting status to ' + true + ': ' + result);
+               response.setHeader("cmd-response", !status );
+               response.setHeader("onoff", "on");
+	        console.log("Status (" + status + ") sent to SmartThings.");
+	        response.end();
+               
+      
+        return;
+      
+    });
+  //});
+});
 		break
 
 		case "status":
-			tuya.getStatus(function(error, status) {
-				if (error) { 
-				       tuya.destroy();
-		    	  	   return console.log("TUYAPI Error: " + error); 
-		    	}
-				if (status == true) {
-					status = "on";
-				} else {
-					status = "off";
-				}
-				response.setHeader("cmd-response", status );
-				console.log("Status (" + status + ") sent to SmartThings.");
-				response.end();
-				tuya.destroy();
-			});
+			  //tuya.resolveIds().then(() => {  
+  tuya.get({'dps': dps}).then(status => {
+    console.log('Status: ' + status);
+
+    
+               response.setHeader("cmd-response", status );
+               response.setHeader("onoff", "on");
+	        console.log("Status (" + status + ") sent to SmartThings.");
+	        response.end();
+               
+      
+        return;
+      
+    
+  //});
+});
 		break
 
 		default:
