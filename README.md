@@ -1,6 +1,6 @@
-# TuyaSmartthings
+# TuyaHubitat
 
-Currently PARTIALLY functional SmartThings device handler and node.js script for TuyAPI supported devices
+Currently functional Hubitat device handler and node.js script for TuyAPI supported devices. 
 
 ## Requires
 
