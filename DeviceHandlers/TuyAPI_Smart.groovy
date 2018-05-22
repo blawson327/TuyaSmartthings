@@ -1,3 +1,4 @@
+import groovy.json.JsonSlurper
 /*
 TuyAPI SmartPlug Device Handler
 
@@ -19,11 +20,11 @@ Update History
 metadata {
 	definition (name: "TuyAPI Smart Plug", namespace: "blawson327", author: "Ben Lawson") {
 		capability "Switch"
-		capability "refresh"
-		capability "polling"
-		capability "Sensor"
+		capability "Refresh"
+		//capability "Polling"
+		//capability "Sensor"
 		capability "Actuator"
-		command "setCurrentDate"
+		//command "setCurrentDate"
 	}
 	tiles(scale: 2) {
 		standardTile("switch", "device.switch", width: 6, height: 4, canChangeIcon: true) {
@@ -45,6 +46,7 @@ preferences {
 	input(name: "gatewayIP", type: "text", title: "Gateway IP", required: true, displayDuringSetup: true)
 	input(name: "deviceID", type: "text", title: "Device ID", required: true, displayDuringSetup: true)
 	input(name: "localKey", type: "text", title: "Local Key", required: true, displayDuringSetup: true)
+    input(name: "dps", type: "text", title: "dps", required: true, displayDuringSetup: true)
 }
 
 def installed() {
@@ -66,16 +68,16 @@ def off() {
 }
 
 def onOffResponse(response){
-	if (response.headers["cmd-response"] == "TcpTimeout") {
+   // log.debug "line 71 ${cmdResponse}"
+   // log.debug "line 71 ${onoff}"
+	if (cmdResponse == "TcpTimeout") {
 		log.error "$device.name $device.label: Communications Error"
 		sendEvent(name: "switch", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
 	} else {
-    	if (response.headers["cmd-response"] == "true") {
-            def cmd = response.headers["tuyapi-onoff"]
-        	sendEvent(name: "switch", value: cmd, isStateChange: true)
-            }
-    }
-	//refresh()
+        def status = onoff
+		log.info "${device.name} ${device.label}: Power: ${status}"
+		sendEvent(name: "switch", value: status)
+	}
 }
 
 //	----- REFRESH ------------------------------------------------
@@ -84,16 +86,20 @@ def refresh(){
 	sendCmdtoServer("status", "deviceCommand", "refreshResponse")
 }
 def refreshResponse(response){
-	if (response.headers["cmd-response"] == "TcpTimeout") {
+	if (cmdResponse == "TcpTimeout") {
 		log.error "$device.name $device.label: Communications Error"
 		sendEvent(name: "switch", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
 	} else {
-        def status = response.headers["cmd-response"]
+       // log.debug "line 94 ${cmdResponse}"
+        if (cmdResponse == true){
+            def status = on
+        }else{
+            def status = off
 		log.info "${device.name} ${device.label}: Power: ${status}"
 		sendEvent(name: "switch", value: status)
 	}
 }
-
+}
 //	----- SEND COMMAND DATA TO THE SERVER -------------------------------------
 private sendCmdtoServer(command, hubCommand, action){
 	def headers = [:] 
@@ -102,10 +108,54 @@ private sendCmdtoServer(command, hubCommand, action){
 	headers.put("tuyapi-devid", deviceID)
 	headers.put("tuyapi-localkey", localKey)
 	headers.put("tuyapi-command", command)
+    headers.put("action", action)
 	headers.put("command", hubCommand)
-	sendHubCommand(new physicalgraph.device.HubAction([
-		headers: headers],
-		device.deviceNetworkId,
-		[callback: action]
-	))
+    headers.put("dps", dps)
+   // log.debug "${hubCommand}"
+	def hubCmd = new hubitat.device.HubAction([
+        method: "GET",
+		headers: headers]
+    
+	)
+    hubCmd
+    
+}
+
+def parse(response) {
+	def resp = parseLanMessage(response)
+	def action = resp.headers["action"]
+   // def onoff = resp.headers["onoff"]
+    //log.debug "line 123 ${onoff}"
+	def jsonSlurper = new JsonSlurper()
+	cmdResponse = jsonSlurper.parseText(resp.headers["cmd-response"])
+    onoff = resp.headers["onoff"]
+    
+        
+   // log.debug "line 122 ${resp.headers}"
+	//if (cmdResponse == "TcpTimeout") {
+    if (cmdResponse == "TcpTimeout") {
+		log.error "$device.name $device.label: Communications Error"
+		sendEvent(name: "switch", value: "offline", descriptionText: "ERROR at hubResponseParse TCP Timeout")
+		sendEvent(name: "deviceError", value: "TCP Timeout in Hub")
+	} else {
+        //log.debug "line 131 ${action} and ${cmdResponse}"
+		actionDirector(action, cmdResponse, onoff)
+		sendEvent(name: "deviceError", value: "OK")
+	}
+}
+def actionDirector(action, cmdResponse, onoff) {
+    //log.debug "line 139 ${onoff}"
+    
+	switch(action) {
+		case "onOffResponse":
+        onOffResponse(onoff)
+			break
+
+		case "refreshResponse":
+			refreshResponse(cmdResponse)
+			break
+
+		default:
+			log.debug "at default"
+	}
 }
