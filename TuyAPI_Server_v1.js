@@ -73,12 +73,13 @@ function processDeviceCommand(request, response) {
 	var localKey = request.headers["tuyapi-localkey"]
 	var command =  request.headers["tuyapi-command"]
         var dps = request.headers["dps"]
+        console.log(dps)
         var action = request.headers["action"]
 
 	response.setHeader("action", action)
         
 
-	var respMsg = "deviceCommand sending to IP: " + deviceIP + " Command: " + command
+	var respMsg = "deviceCommand sending to IP: " + deviceIP + " Command: " + command + " DPS: "
 	console.log(respMsg)
 
 	var tuya = new TuyaDevice({
@@ -86,7 +87,7 @@ function processDeviceCommand(request, response) {
 	  
 	  id: deviceID,
           key: localKey,
-          dps: '4',
+          dps: 'dps',
           ip: '192.168.1.75'});
 
 	switch(command) {
@@ -94,6 +95,7 @@ function processDeviceCommand(request, response) {
 			//tuya.resolveIds().then(() => {  
   tuya.get({'dps': dps}).then(status => {
     console.log('Status: ' + status);
+    console.log(dps)
 
     tuya.set({set: false, 'dps': dps}).then(result => {
                console.log('Result of setting status to ' + false + ': ' + result);
@@ -131,10 +133,10 @@ function processDeviceCommand(request, response) {
 		break
 
 		case "status":
-			  //tuya.resolveIds().then(() => {  
+			  tuya.resolveIds().then(() => {  
   tuya.get({'dps': dps}).then(status => {
     console.log('Status: ' + status);
-
+    console.log(dps)
     
                response.setHeader("cmd-response", status );
                response.setHeader("onoff", "on");
@@ -145,7 +147,7 @@ function processDeviceCommand(request, response) {
         return;
       
     
-  //});
+  });
 });
 		break
 
