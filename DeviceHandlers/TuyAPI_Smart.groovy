@@ -24,13 +24,27 @@ metadata {
 	definition (name: "TuyAPI Smart Plug", namespace: "cwwilson08", author: "Chris Wilson") {
 		capability "Refresh"
 		capability "Actuator"
-        command "togglePower", ["NUMBER"]
-        attribute "Plug_1", "string"
-        attribute "Plug_2", "string"
-        attribute "Plug_3", "string"
-        attribute "Plug_4", "string"
-        attribute "Plug_5", "string"
-        attribute "Plug_6", "string"
+        capability "Switch"
+       // command "togglePower", ["NUMBER"]
+       // attribute "Plug_1", "string"
+       // attribute "Plug_2", "string"
+       // attribute "Plug_3", "string"
+      //  attribute "Plug_4", "string"
+      //  attribute "Plug_5", "string"
+     //   attribute "Plug_6", "string"
+        
+        command "USB"
+        attribute "USB", "5"
+        command "Plug_1"
+        attribute "Plug_1", "1"
+        command "Plug_2"
+        attribute "Plug_2", "2"
+        command "Plug_3"
+        attribute "Plug_3", "3"
+        command "Plug_4"
+        attribute "Plug_4", "4"
+        command "ALLon"
+        attribute "ALLon", "6"
 	}
 }
 preferences {
@@ -38,11 +52,13 @@ preferences {
 	input(name: "gatewayIP", type: "text", title: "Gateway IP", required: true, displayDuringSetup: true)
 	input(name: "deviceID", type: "text", title: "Device ID", required: true, displayDuringSetup: true)
 	input(name: "localKey", type: "text", title: "Local Key", required: true, displayDuringSetup: true)
+    input(name: "usr", type: "text", title: "Master", required: true, displayDuringSetup: true)
    // input(name: "dps", type: "text", title: "dps", required: true, displayDuringSetup: true)
 }
 
 def installed() {
 	updated()
+    sendEvent(name: "numberOfButtons", value: 30)
 }
 
 def updated() {
@@ -64,50 +80,163 @@ def togglePower(deviceNo) {
     }
 }
 
-def onOffResponse(response, deviceNo){
+def on(deviceNo) {
+    deviceNo = usr
+    sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+   }
+
+def off(deviceNo) {
+    deviceNo = usr
+    sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+   }
+
+def Plug_1(deviceNo) {
+    deviceNo = "Plug_1"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+def Plug_2(deviceNo) {
+    deviceNo = "Plug_2"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+def Plug_3(deviceNo) {
+    deviceNo = "Plug_3"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+def Plug_4(deviceNo) {
+    deviceNo = "Plug_4"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+def USB(deviceNo) {
+    deviceNo = "USB"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse")
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+
+def ALLon(deviceNo) {
+    deviceNo = "ALLon"
+//	deleted the cmds on and off.  Replace with this.
+//	assume that states are on or off.  Offline will try to turn on.
+//	added deviceNo.  This will pass through the system to the response method and allow proper parsing.
+    def plugState = device.currentValue(deviceNo)
+    log.debug "${plugState} LINE 75"
+    if (plugState == "on") {
+		sendCmdtoServer("off", deviceNo, "deviceCommand", "onOffResponse",)
+    } else {
+		sendCmdtoServer("on", deviceNo, "deviceCommand", "onOffResponse")
+    }
+}
+def onOffResponse(response, deviceNo, cmdResponse){
+    log.debug "line 147 ${cmdResponse}"
 //    deviceNo = deviceNo.toString()
 //	Changed switch to plug_$(deviceNo}.  device no comes from the original toggle (carried
 //	all commands and responses.
-	if (cmdResponse == "TcpTimeout") {
+	if (cmdResponse == "0") {
 		log.error "$device.name $device.label: Communications Error"
-        sendEvent(name: "Plug_${deviceNo}", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
+       // sendEvent(name: "ALLon", value: "off")
+	
 	} else {
-
+        
 		log.info "${device.name} ${device.label}: Power: ${response}"
-		sendEvent(name: "Plug_${deviceNo}", value: response)
+		sendEvent(name: "${deviceNo}", value: response)
+        if (response == "off") {
+            	sendEvent(name: "ALLon", value: "off")
+                runIn(1, refresh)
+        } else {
+        if (response == "on") {
+            	runIn(1, refresh)
+                
+       
+    } else {
+        	  if (deviceNo == "ALLon")
+              runIn(1, refresh)
+             // refresh
+           
+        		
+        }         
+    	}       
 	}
 }
 //	----- REFRESH ------------------------------------------------
 def refresh(){
 //	Will do all six switches on refresh, one second apart.
     def rfrsh = []
-	rfrsh << sendCmdtoServer("status", "1", "deviceCommand", "refreshResponse")
+	rfrsh << sendCmdtoServer("status", "USB", "deviceCommand", "refreshResponse")
 	rfrsh << pauseExecution(500)
-	rfrsh << sendCmdtoServer("status", "2", "deviceCommand", "refreshResponse")
+	rfrsh << sendCmdtoServer("status", "Plug_1", "deviceCommand", "refreshResponse")
 	rfrsh << pauseExecution(500)
-	rfrsh << sendCmdtoServer("status", "3", "deviceCommand", "refreshResponse")
+	rfrsh << sendCmdtoServer("status", "Plug_2", "deviceCommand", "refreshResponse")
 	rfrsh << pauseExecution(500)
-	rfrsh << sendCmdtoServer("status", "4", "deviceCommand", "refreshResponse")
+	rfrsh << sendCmdtoServer("status", "Plug_3", "deviceCommand", "refreshResponse")
     rfrsh << pauseExecution(500)
-    rfrsh << sendCmdtoServer("status", "5", "deviceCommand", "refreshResponse")
+    rfrsh << sendCmdtoServer("status", "Plug_4", "deviceCommand", "refreshResponse")
     rfrsh << pauseExecution(500)
-    rfrsh << sendCmdtoServer("status", "6", "deviceCommand", "refreshResponse")
+    rfrsh << sendCmdtoServer("status", "ALLon", "deviceCommand", "refreshResponse")
     rfrsh
 }
 def refreshResponse(cmdResponse, deviceNo){
     log.debug "cmdresponse ${cmdResponse}"
+    log.debug "line 203 ${deviceNo} dps"
     def status
-	if (cmdResponse == "TcpTimeout") {
+	if (deviceNo == "ALLon") {
 		log.error "$device.name $device.label: Communications Error"
-		sendEvent(name: "Plug_${deviceNo}", value: "offline", descriptionText: "ERROR - OffLine - mod onOffResponse")
+		if (device.currentValue("USB") == "on" && device.currentValue("Plug_1") == "on" && device.currentValue("Plug_2") == "on" && device.currentValue("Plug_3") == "on" && device.currentValue("Plug_4") == "on") {
+        log.debug "i think this is working line 209"
+        sendEvent(name: "ALLon", value: "on")
+        } else {
+            sendEvent(name: "ALLon", value: "off") }
 	} else {
         if (cmdResponse == true){
             status = "on"
         }else{
             status = "off"
 		}
+        
 		log.info "${device.name} ${device.label}: Power: ${status}"
-		sendEvent(name: "Plug_${deviceNo}", value: status)
+		sendEvent(name: "${deviceNo}", value: status)
 	}
 }
 //	----- SEND COMMAND DATA TO THE SERVER -------------------------------------
@@ -119,35 +248,35 @@ private sendCmdtoServer(command, deviceNo, hubCommand, action){
    // def deviceID
     def dps 
     switch(deviceNo) {
-        case "1":
+        case "Plug_1":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
+            dps = 1
         	break
-        case "2":
+        case "Plug_2":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
+            dps = 2
         	break
-        case "3":
+        case "Plug_3":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
+            dps = 3
         	break
-        case "4":
+        case "Plug_4":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
+            dps = 4
         	break
-         case "5":
+         case "USB":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
-        	break
-         case "6":
+            dps = 5
+            break
+         case "ALLon":
     		deviceIP = deviceIP
     		deviceID = deviceID
-            dps = deviceNo
+            dps = 6
         	break
         default:
             break
@@ -198,7 +327,7 @@ log.error cmdResponse
 def actionDirector(action, cmdResponse, onoff, deviceNo) {
 	switch(action) {
 		case "onOffResponse":
-        onOffResponse(onoff, deviceNo)
+        onOffResponse(onoff, deviceNo, cmdResponse)
 			break
 
 		case "refreshResponse":
